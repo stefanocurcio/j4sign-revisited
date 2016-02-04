@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src/java/core"/>
+	<classpathentry kind="src" path="src/java/wrapper-pcsc10"/>
+	<classpathentry kind="src" path="src/java/wrapper-pkcs11"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/PLUGIN_LIB"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/SERVLET_API_LIB"/>
+	<classpathentry kind="lib" path="lib/bcmail-jdk16-146.jar" sourcepath="/home/resolir/Scaricati/bc/146/bcmail-jdk16-146/src.zip"/>
+	<classpathentry kind="lib" path="lib/bcprov-jdk16-146.jar" sourcepath="/home/resolir/Scaricati/bc/146/bcprov-jdk16-146/src.zip"/>
+	<classpathentry kind="lib" path="lib/bctsp-jdk16-146.jar" sourcepath="/home/resolir/Scaricati/bc/146/bctsp-jdk16-146/src.zip"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

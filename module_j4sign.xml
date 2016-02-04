@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_j4sign" default="compile.module.j4sign">
+  <dirname property="module.j4sign.basedir" file="${ant.file.module_j4sign}"/>
+  
+  <property name="module.jdk.home.j4sign" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.j4sign" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.j4sign" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.j4sign" value="-encoding windows-1252 -source 1.6 ${compiler.args}"/>
+  
+  <property name="j4sign.output.dir" value="${module.j4sign.basedir}/bin"/>
+  <property name="j4sign.testoutput.dir" value="${module.j4sign.basedir}/bin"/>
+  
+  <path id="j4sign.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="j4sign.module.production.classpath">
+    <pathelement location="${basedir}/lib/bcmail-jdk16-146.jar"/>
+    <pathelement location="${basedir}/lib/bcprov-jdk16-146.jar"/>
+    <pathelement location="${basedir}/lib/bctsp-jdk16-146.jar"/>
+    <path refid="${module.jdk.classpath.j4sign}"/>
+    <path refid="library.java_ee_6-java_ee_6.classpath"/>
+  </path>
+  
+  <path id="j4sign.runtime.production.module.classpath">
+    <pathelement location="${j4sign.output.dir}"/>
+    <pathelement location="${basedir}/lib/bcmail-jdk16-146.jar"/>
+    <pathelement location="${basedir}/lib/bcprov-jdk16-146.jar"/>
+    <pathelement location="${basedir}/lib/bctsp-jdk16-146.jar"/>
+    <path refid="library.java_ee_6-java_ee_6.classpath"/>
+  </path>
+  
+  <path id="j4sign.module.classpath">
+    <pathelement location="${j4sign.output.dir}"/>
+    <pathelement location="${basedir}/lib/bcmail-jdk16-146.jar"/>
+    <pathelement location="${basedir}/lib/bcprov-jdk16-146.jar"/>
+    <pathelement location="${basedir}/lib/bctsp-jdk16-146.jar"/>
+    <path refid="${module.jdk.classpath.j4sign}"/>
+    <path refid="library.java_ee_6-java_ee_6.classpath"/>
+  </path>
+  
+  <path id="j4sign.runtime.module.classpath">
+    <pathelement location="${j4sign.output.dir}"/>
+    <pathelement location="${basedir}/lib/bcmail-jdk16-146.jar"/>
+    <pathelement location="${basedir}/lib/bcprov-jdk16-146.jar"/>
+    <pathelement location="${basedir}/lib/bctsp-jdk16-146.jar"/>
+    <path refid="library.java_ee_6-java_ee_6.classpath"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.j4sign">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.j4sign">
+    <patternset refid="excluded.from.module.j4sign"/>
+  </patternset>
+  
+  <path id="j4sign.module.sourcepath">
+    <dirset dir="${module.j4sign.basedir}">
+      <include name="src/java/core"/>
+      <include name="src/java/wrapper-pcsc10"/>
+      <include name="src/java/wrapper-pkcs11"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.j4sign" depends="compile.module.j4sign.production,compile.module.j4sign.tests" description="Compile module j4sign"/>
+  
+  <target name="compile.module.j4sign.production" depends="register.custom.compilers" description="Compile module j4sign; production classes">
+    <mkdir dir="${j4sign.output.dir}"/>
+    <javac2 destdir="${j4sign.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.j4sign}/javac">
+      <compilerarg line="${compiler.args.j4sign}"/>
+      <bootclasspath refid="j4sign.module.bootclasspath"/>
+      <classpath refid="j4sign.module.production.classpath"/>
+      <src refid="j4sign.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.j4sign"/>
+    </javac2>
+    
+    <copy todir="${j4sign.output.dir}">
+      <fileset dir="${module.j4sign.basedir}/src/java/core">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+      <fileset dir="${module.j4sign.basedir}/src/java/wrapper-pcsc10">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+      <fileset dir="${module.j4sign.basedir}/src/java/wrapper-pkcs11">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.j4sign.tests" depends="register.custom.compilers,compile.module.j4sign.production" description="compile module j4sign; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.j4sign" description="cleanup module">
+    <delete dir="${j4sign.output.dir}"/>
+    <delete dir="${j4sign.testoutput.dir}"/>
+  </target>
+</project>

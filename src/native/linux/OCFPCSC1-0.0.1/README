@@ -1,0 +1,28 @@
+Title   : OCF to PC/SC Lite layer
+Author  : David Corcoran
+Requires: pcsc-lite-0.5.2 or higher 
+Purpose : This provides a means to use OCF under
+         Unix to talk to PC/SC supported readers
+
+Note: This is pre-alpha stuff so email me with problems.
+I'm not an OCF expert so your feedback is valuable.
+I have tested this with all the demo applications included
+with OCF except the stockbroker demo.
+
+To install type make
+
+To use this make sure this library is copied into a path
+that is included in your LD_LIBRARY_PATH or that is included
+in your ld.so.conf such as /usr/lib
+
+You must have pcsc-lite installed (0.5.2) or higher and OCF 1.1.1.
+
+You will also have to include only 1 reader in your /etc/reader.conf
+
+You will need to update your opencard.properties file.  An example
+is included.
+
+For questions please contact: corcoran@linuxnet.com
+
+Best Regards,
+Dave

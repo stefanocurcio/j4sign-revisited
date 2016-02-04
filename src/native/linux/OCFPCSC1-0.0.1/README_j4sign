@@ -1,0 +1,6 @@
+I have slightly modified the original makefile 
+(THE INCLUDE line and added a -lstdc++ flag ìto the linker command) to adapt 
+to a modern j2sdk environment.
+
+
+Roberto Resoli

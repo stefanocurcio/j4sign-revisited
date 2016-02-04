@@ -1,0 +1,15 @@
+<web-app>
+    <servlet>
+        <servlet-name>
+            CMSServlet
+        </servlet-name>
+        <servlet-class>
+            it.trento.comune.j4sign.examples.CMSServlet
+        </servlet-class>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>CMSServlet</servlet-name>
+        <url-pattern>/cmsservlet</url-pattern>
+    </servlet-mapping>
+</web-app>

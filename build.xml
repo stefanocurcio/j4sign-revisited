@@ -1,0 +1,572 @@
+<project name="j4sign" basedir="." default="all">
+
+	<property file="build.properties"/>
+
+    <!-- Project settings -->
+    <property name="project.distname" value="j4sign"/>
+    <property name="project.version" value="0.1.5"/>
+    <property name="project.encoding" value="utf-8"/>
+	
+	<!-- Change to the target jvm you want to run the app into -->
+	<property name="jvm.target" value="1.6" />
+	
+	<property name="project.buildby" value="Lascaux"/>
+
+	<property name="ext.name" value="SmartCardAccess"/>
+	<property name="ext.specification.vendor" value="Lascaux"/>
+	<property name="ext.specification.version" value="1.0"/>
+	<property name="ext.implementation.vendor.id" value="it.trento.comune"/>
+	<property name="ext.implementation.vendor" value="${ext.specification.vendor}"/>
+	<property name="ext.implementation.version" value="0.2"/>
+	
+	<property name="ext.jarname" value="SmartCardAccess.jar"/>
+	<property name="ext.signed.jarname" value="SmartCardAccess-signed.jar"/>
+	
+	<property name="ext.installer.jarname" value="SmartCardAccessInstaller.jar"/>
+	<property name="ext.installer.signed.jarname" value="SmartCardAccessInstaller-signed.jar"/>
+	
+	<!-- Extension installer source - uncomment and set or set externally -->
+	<!--
+	<property name="ext.installer.hostandport" value="http://localhost:8080"/>
+	<property name="ext.installer.webcontext" value="sc"/>
+	-->
+
+	<property name="ext.installer.url" value="${ext.installer.hostandport}/${ext.installer.webcontext}/${ext.installer.signed.jarname}"/>
+	
+	<property name="applet.name" value="SimpleSignApplet" />
+	<property name="applet.jarname" value="${applet.name}.jar" />
+	<property name="applet.signed.jarname" value="${applet.name}-signed.jar" />
+	
+	<property name="applet-pkcs11.name" value="PKCS11SignApplet" />
+	<property name="applet-pkcs11.jarname" value="${applet-pkcs11.name}.jar" />
+	<property name="applet-pkcs11.signed.jarname" value="${applet-pkcs11.name}-signed.jar" />
+	<!-- More hosts that may reference the pkcs11 applet - uncomment and set or set externally -->
+	<!--
+			<property name="applet-pkcs11.referencing.hosts" value="http://localhost:8080"/>
+	-->
+
+	<!-- jarsign settings -->
+	<!-- Keystore file location - uncomment and set or set externally -->
+	<!-- <property name="keystore" value=""/> --> 
+	
+	<!-- Keystore password - uncomment and set or set externally -->
+	<!-- <property name="keystore.pass" value=""/> -->
+	
+	<!-- Change to match keypair alias in your keystore - uncomment and set or set externally -->
+	<!-- <property name="signer.alias" value=""/>  -->
+	
+	<!-- Alias password needed to acces alias private key when signing - uncomment and set or set externally -->
+	<!-- <property name="signer.pass" value=""/> -->
+	
+	
+    <!-- Local system paths -->
+	<property name="project.buildpath" value="build"/>
+	<property name="classes.buildpath" value="${project.buildpath}/bin"/>
+	<property name="conf.buildpath" value="${project.buildpath}/conf"/>
+	<property name="crl.buildpath" value="${project.buildpath}/crl"/>
+    <property name="project.distpath" value="dist"/>
+	<property name="project.srcpath" value="src"/>
+	<property name="project.docpath" value="doc"/>
+	<property name="native.path.win32" value="native/win32"/>
+	<property name="native.path.win64" value="native/win64"/>
+	<property name="native.path.linux32" value="native/linux32"/>
+	<property name="native.path.linux64" value="native/linux64"/>
+	
+	<property name="web.srcpath" value="${project.srcpath}/web"/>
+	<property name="java.srcpath.core" value="${project.srcpath}/java/core"/>
+	<property name="pkcs11.srcpath" value="${project.srcpath}/java/wrapper-pcsc10"/>
+	<property name="pcsc10.srcpath" value="${project.srcpath}/java/wrapper-pkcs11"/>
+	
+	<property name="scripts.srcpath" value="${project.srcpath}/scripts"/>
+	
+	<!-- BouncyCastle jars -->
+	<property name="bouncycastle.libpath" value="lib"/>
+	<property name="bouncycastle.provider.jar" value="${bouncycastle.libpath}/bcprov-jdk16-146.jar"/>
+	<property name="bouncycastle.mail.jar" value="${bouncycastle.libpath}/bcmail-jdk16-146.jar"/>
+	<property name="bouncycastle.tsp.jar" value="${bouncycastle.libpath}/bctsp-jdk16-146.jar"/>
+		
+	<!-- servlet api jar - uncomment and set or set externally -->
+	<!-- <property name="servlet.api.jar" value="/mnt/win_d/jakarta-tomcat-5.0.28/common/lib/servlet-api.jar"/> -->
+	<!-- plugin.jar (includes Netscape javascript classes) -->
+	<!-- <property name="javaplugin.api.jar" value="C:\Program Files\Java\jre7\lib\plugin.jar" />-->
+
+    <!-- Check timestamp on files -->
+    <target name="prepare">
+        <tstamp/>
+		<mkdir dir="${project.buildpath}" />
+		<mkdir dir="${project.distpath}" />
+    </target>
+	
+	<target name="prepare.doc">
+			<delete dir="${project.docpath}"/>
+			<mkdir dir="${project.docpath}" />
+	 </target>
+	
+	<target name="doc" depends="prepare.doc">
+		<javadoc destdir="doc"
+		           author="true"
+		           version="true"
+		           use="true"
+		           windowtitle="j4sign core API">
+
+		    <packageset dir="${java.srcpath.core}">
+		    </packageset>
+		  </javadoc>
+	</target>
+
+	<!-- prepare binary distribution -->
+	    <target name="prepare.bin" depends="prepare">
+	        <tstamp/>
+			<mkdir dir="${classes.buildpath}" />
+	    	<mkdir dir="${conf.buildpath}" />
+	    	<mkdir dir="${crl.buildpath}" />
+	    </target>
+	
+    <!-- Copy any resource or configuration files -->
+    <target name="resources" depends="prepare.bin">
+    	<copy todir="${project.buildpath}" includeEmptyDirs="no">
+    	            <fileset dir="${project.srcpath}" includes="INSTALL,README,LICENSE*">
+    	            </fileset>
+    				<fileset dir="." includes="*.properties">
+    		    	</fileset>
+    	</copy>
+        <copy todir="${classes.buildpath}" includeEmptyDirs="no">
+            <fileset dir="${java.srcpath.core}">
+            <patternset>
+                <include name="**/*.properties"/>
+       	     	<include name="**/LICENSE*"/>
+       	     </patternset>
+            </fileset>
+        </copy>
+    	<copy todir="${conf.buildpath}" includeEmptyDirs="no">
+    	     <fileset dir="./conf" includes="DigitPA.cer">
+    	     </fileset>
+    	</copy>
+    	<copy todir="${crl.buildpath}" includeEmptyDirs="no">
+    	     <fileset dir="./crl" includes="CRL_CACHING_README.txt">
+    	     </fileset>
+    	</copy>
+    </target>
+	
+    <!-- SmartCardAccess Extension prepare -->
+    <target name="prepare.ext">
+        <tstamp/>
+		<mkdir dir="${project.buildpath}/ext" />
+    </target>
+    
+    <!-- build SmartCardAccess Extension classes -->
+    <target name="compile.ext" depends="prepare.bin,prepare.ext">
+    	<javac 	srcdir="${pkcs11.srcpath}" 
+			encoding="${project.encoding}" source="${jvm.target}" target="${jvm.target}"
+    	    destdir="${classes.buildpath}" 
+    	    deprecation="on"
+    		debug="true"
+    	>
+    	</javac>
+    	<javac 	srcdir="${pcsc10.srcpath}" 
+			encoding="${project.encoding}" source="${jvm.target}" target="${jvm.target}"
+        		destdir="${classes.buildpath}" 
+        	    deprecation="on"
+    			debug="true"
+    		>
+        </javac>
+    	<!-- copy properties -->
+        <copy todir="${classes.buildpath}" includeEmptyDirs="no">
+             <fileset dir="${pkcs11.srcpath}">
+             <patternset>
+                 <include name="**/*.properties"/>
+             	 <include name="**/LICENSE*"/>
+             </patternset>
+             </fileset>
+        	<fileset dir="${pcsc10.srcpath}">
+        	     <patternset>
+        	     <include name="**/*.properties"/>
+        	     <include name="**/LICENSE*"/>
+        	     </patternset>
+        	</fileset>
+         </copy>
+    </target>
+	
+    <!-- build SmartCardAccess Extension installer classes -->
+    <target name="compile.ext.installer" depends="prepare.bin,prepare.ext">
+        <javac 	srcdir="${java.srcpath.core}" 
+				encoding="${project.encoding}" source="${jvm.target}" target="${jvm.target}"
+        		destdir="${classes.buildpath}" 
+        	    deprecation="on"
+        		debug="true"
+        	>
+        	<include name="it/trento/comune/j4sign/installer/**"/>
+        </javac>
+    </target>
+	
+
+	
+	<!-- build SmartCardAccess Extension jar -->
+	    <target name="jar.ext" depends="compile.ext">
+	    	<jar destfile="${project.buildpath}/ext/${ext.jarname}"
+	    	       basedir="${classes.buildpath}"
+	    	       includes="com/**,iaik/**"
+	    	  >
+			
+	    	<manifest>
+	    	    <attribute name="Built-By" value="${project.buildby}"/>
+	    	    <attribute name="Extension-Name" value="${ext.name}"/>
+	    		<attribute name="Specification-Vendor" value="${ext.specification.vendor}"/>
+	    	    <attribute name="Specification-Version" value="${ext.specification.version}"/>
+	    		<attribute name="Implementation-Vendor-Id" value="${ext.implementation.vendor.id}"/>
+	    	    <attribute name="Implementation-Vendor" value="${ext.implementation.vendor}"/>
+	    	    <attribute name="Implementation-Version" value="${ext.implementation.version}"/> 
+	    	 </manifest>
+	    		
+	    	</jar>
+	    	
+	    	<signjar 	jar="${project.buildpath}/ext/${ext.jarname}" 
+	    			 	signedjar="${project.buildpath}/ext/${ext.signed.jarname}" 
+	    				keystore="${keystore}" storepass="${keystore.pass}"
+	    				alias="${signer.alias}" keypass="${signer.pass}"/>
+	    </target>	
+
+	<!-- Copy dll wrappers for SmartCardAccess Extension -->
+    <target name="ext.installer.resources" depends="prepare.bin,jar.ext">
+        <copy todir="${classes.buildpath}/it/trento/comune/j4sign/installer" includeEmptyDirs="no">
+        	<fileset file="${project.buildpath}/ext/${ext.signed.jarname}" />
+        </copy>
+        <copy todir="${classes.buildpath}/it/trento/comune/j4sign/installer/lib32" includeEmptyDirs="no">
+            <fileset dir="${native.path.win32}">
+            	<patternset>
+                	<include name="*.dll"/>
+            	</patternset>
+            </fileset>
+        	<fileset dir="${native.path.linux32}">
+        		<patternset>
+        	    	<include name="*.so"/>
+            	</patternset>
+        	</fileset>
+        </copy>
+        <copy todir="${classes.buildpath}/it/trento/comune/j4sign/installer/lib64" includeEmptyDirs="no">
+            <fileset dir="${native.path.win64}">
+            	<patternset>
+                	<include name="*.dll"/>
+            	</patternset>
+            </fileset>
+        	<fileset dir="${native.path.linux64}">
+        		<patternset>
+        	    	<include name="*.so"/>
+            	</patternset>
+        	</fileset>
+        </copy>
+    </target>
+	
+	<!-- build SmartCardAccess Extension installer jar -->
+	    <target name="jar.ext.installer" depends="compile.ext.installer,jar.ext,ext.installer.resources">
+	    	<jar destfile="${project.buildpath}/ext/${ext.installer.jarname}"
+	    	       basedir="${classes.buildpath}"
+	    	       includes="it/trento/comune/j4sign/installer/**"
+	    	  >
+	    		<!--
+	    		<fileset dir="${project.buildpath}/ext"
+	    	             includes="*.dll,${ext.signed.jarname}"
+	    	    />
+	-->    		
+	    	<manifest>
+	    	    <attribute name="Built-By" value="${project.buildby}"/>
+	    	    <attribute name="Extension-Name" value="${ext.name}"/>
+	    		<attribute name="Specification-Vendor" value="${ext.specification.vendor}"/>
+	    	    <attribute name="Specification-Version" value="${ext.specification.version}"/>
+	    		<attribute name="Implementation-Vendor-Id" value="${ext.implementation.vendor.id}"/>
+	    	    <attribute name="Implementation-Vendor" value="${ext.implementation.vendor}"/>
+	    	    <attribute name="Implementation-Version" value="${ext.implementation.version}"/> 
+	    		<attribute name="Main-Class" value="it.trento.comune.j4sign.installer.Installer"/>
+	    		<!-- New attributes -->
+	    		<attribute name="Permissions" value="all-permissions"/>
+	    	 </manifest>
+		     		
+	    	</jar>
+
+	    	<signjar 	jar="${project.buildpath}/ext/${ext.installer.jarname}" 
+	    			 	signedjar="${project.buildpath}/ext/${ext.installer.signed.jarname}" 
+						keystore="${keystore}" storepass="${keystore.pass}"
+						alias="${signer.alias}" keypass="${signer.pass}"/>
+
+	    </target>
+	
+	
+    <!-- applet prepare -->
+    <target name="prepare.applet">
+        <tstamp/>
+		<mkdir dir="${project.buildpath}/applet" />
+    </target>
+	
+    <!-- applet prepare -->
+    <target name="prepare.applet-pkcs11">
+        <tstamp/>
+		<mkdir dir="${project.buildpath}/applet-pkcs11" />
+    </target>
+	
+    <!-- build applet classes -->
+    <target name="compile.applet" depends="prepare.bin,prepare.applet,jar.ext,resources">
+        <javac 	srcdir="${java.srcpath.core}" 
+			encoding="${project.encoding}" source="${jvm.target}" target="${jvm.target}"
+        		destdir="${classes.buildpath}" 
+        	classpath="${project.buildpath}/ext/${ext.installer.jarname}"
+        	    deprecation="on"
+        	debug="true"
+        >
+        	<include name="it/trento/comune/j4sign/examples/SimpleSignApplet.java"/>
+        </javac>
+    </target>
+	
+    <!-- build applet-pkcs11 classes -->
+    <target name="compile.applet-pkcs11" depends="prepare.bin,prepare.applet-pkcs11,jar.ext.installer,resources">
+        <javac srcdir="${java.srcpath.core}"
+			encoding="${project.encoding}" source="${jvm.target}" target="${jvm.target}"
+        	destdir="${classes.buildpath}" 
+        	classpath="${project.buildpath}/ext/${ext.installer.jarname};${javaplugin.api.jar}"
+        	deprecation="on"
+        	debug="true"
+        >
+        	<include name="it/trento/comune/j4sign/examples/PKCS11SignApplet.java"/>
+        	<include name="it/trento/comune/j4sign/examples/SwingWorker.java"/>
+        	<include name="it/trento/comune/j4sign/examples/JTextAreaOutputStream.java"/>
+        	<include name="it/trento/comune/j4sign/examples/DigestSignTask.java"/>
+        	<include name="it/trento/comune/j4sign/examples/FindCertTask.java"/>
+        </javac>
+    </target>
+	
+    <!-- build servlet classes -->
+    <target name="compile.web" depends="compile.cms">
+        <javac 	srcdir="${java.srcpath.core}" 
+			encoding="${project.encoding}" source="${jvm.target}" target="${jvm.target}"
+        		destdir="${classes.buildpath}" 
+        	    deprecation="on">
+        	<classpath>        
+        	    <pathelement path ="${bouncycastle.provider.jar}"/>
+        	    <pathelement path ="${bouncycastle.mail.jar}"/>
+            	<pathelement path ="${servlet.api.jar}"/>
+        		<dirset dir="${classes.buildpath}">
+        		        <include name="it/trento/comune/j4sign/cms/**"/>
+        		</dirset>
+        	</classpath>
+        	<include name="it/trento/comune/j4sign/examples/CMSServlet.java"/>
+        </javac>
+    </target>
+	
+    <!-- build all example classes -->
+    <target name="compile.examples" depends="compile.cms">
+        <javac 	srcdir="${java.srcpath.core}" 
+			encoding="${project.encoding}" source="${jvm.target}" target="${jvm.target}"
+        		destdir="${classes.buildpath}" 
+        	    deprecation="on"
+        		debug="true"
+        	    >
+        	<classpath>        
+        	    <pathelement path ="${bouncycastle.provider.jar}"/>
+        	    <pathelement path ="${bouncycastle.mail.jar}"/>
+        		<pathelement path ="${bouncycastle.tsp.jar}"/>
+            	<pathelement path ="${servlet.api.jar}"/>
+        		<dirset dir="${classes.buildpath}">
+        		        <include name="it/trento/comune/j4sign/cms/**"/>
+        		</dirset>
+        	</classpath>
+        	<include name="it/trento/comune/j4sign/examples/*.java"/>
+        	<exclude name="it/trento/comune/j4sign/examples/PKCS11SignApplet.java"/>
+        </javac>
+    </target>
+	
+	<!-- build applet jar -->
+	    <target name="jar.applet" depends="compile.applet">
+	    	<jar destfile="${project.buildpath}/applet/${applet.jarname}"
+	    	       basedir="${classes.buildpath}"
+	    	       includes="it/trento/comune/j4sign/examples/SimpleSignApplet.class,it/trento/comune/j4sign/pcsc/**,it/trento/comune/j4sign/pkcs11/**"
+	    	  >	    		
+		    	<manifest>
+		    		<attribute name="Application-Name" value="${applet.name}"/>
+		    	    <attribute name="Built-By" value="${project.buildby}"/>
+		    	    <attribute name="Extension-List" value="${ext.name}"/>
+		    		<attribute name="${ext.name}-Extension-Name" value="${ext.name}"/>
+		    	    <attribute name="${ext.name}-Specification-Version" value="${ext.specification.version}"/>
+		    	    <attribute name="${ext.name}-Implementation-Version" value="${ext.implementation.version}"/>
+		    		<attribute name="${ext.name}-Implementation-Vendor-Id" value="${ext.implementation.vendor.id}"/> 
+		    		<attribute name="${ext.name}-Implementation-URL" value="${ext.installer.url}"/>
+		    		<!-- New attributes -->
+		    	    <attribute name="Permissions" value="all-permissions"/>
+		    	 </manifest>	
+	    	</jar>
+
+	    	<signjar 	jar="${project.buildpath}/applet/${applet.jarname}" 
+	    			 	signedjar="${project.buildpath}/applet/${applet.signed.jarname}" 
+						keystore="${keystore}" storepass="${keystore.pass}" 
+						alias="${signer.alias}" keypass="${signer.pass}"/>
+
+	    </target>
+	
+	<!-- build applet-pkcs11 jar -->
+	    <target name="jar.applet-pkcs11" depends="compile.applet-pkcs11">
+	    	<jar destfile="${project.buildpath}/applet-pkcs11/${applet-pkcs11.jarname}"
+	    	       basedir="${classes.buildpath}"
+	    	       includes="it/trento/comune/j4sign/examples/PKCS11SignApplet*.class,it/trento/comune/j4sign/examples/SwingWorker*.class,it/trento/comune/j4sign/examples/JTextAreaOutputStream.class,it/trento/comune/j4sign/examples/DigestSignTask*.class,it/trento/comune/j4sign/examples/FindCertTask*.class,it/trento/comune/j4sign/pcsc/**,it/trento/comune/j4sign/pkcs11/**"
+	    	  >	    		
+		    	<manifest>
+		    		<attribute name="Application-Name" value="${applet-pkcs11.name}"/>
+		    	    <attribute name="Built-By" value="${project.buildby}"/>
+		    	    <attribute name="Extension-List" value="${ext.name}"/>
+		    		<attribute name="${ext.name}-Extension-Name" value="${ext.name}"/>
+		    	    <attribute name="${ext.name}-Specification-Version" value="${ext.specification.version}"/>
+		    	    <attribute name="${ext.name}-Implementation-Version" value="${ext.implementation.version}"/>
+		    		<attribute name="${ext.name}-Implementation-Vendor-Id" value="${ext.implementation.vendor.id}"/> 
+		    		<attribute name="${ext.name}-Implementation-URL" value="${ext.installer.url}"/>
+		    		<!-- New attributes -->
+		    		<attribute name="Permissions" value="all-permissions"/>
+		    		<!-- only if fqdn can be enforced -->
+		    		<attribute name="Codebase" value="${ext.installer.hostandport}"/>
+		    		
+		    		<attribute name="Application-Library-Allowable-Codebase" value="${ext.installer.hostandport} ${applet-pkcs11.referencing.hosts}"/>
+		    		
+		    	 </manifest>	
+	    	</jar>
+
+	    	<signjar 	jar="${project.buildpath}/applet-pkcs11/${applet-pkcs11.jarname}" 
+	    			 	signedjar="${project.buildpath}/applet-pkcs11/${applet-pkcs11.signed.jarname}" 
+						keystore="${keystore}" storepass="${keystore.pass}" 
+						alias="${signer.alias}" keypass="${signer.pass}"/>
+
+	    </target>
+	
+	
+	
+    <!-- web prepare -->
+    <target name="prepare.web">
+        <tstamp/>
+		<mkdir dir="${project.buildpath}/web" />
+    </target>
+	
+
+        		
+	<!-- build web example -->
+	<target name="web" depends="prepare.web,compile.web,jar.ext.installer,jar.applet">
+		<war destfile="${project.buildpath}/web/sc.war" webxml="${web.srcpath}/WEB-INF/web.xml">
+		  <fileset dir="${web.srcpath}"> 
+		      <exclude name="**/CVS/**"/>
+		      <exclude name=".*"/>
+		  	  <exclude name="**/web.xml"/>
+		      <include name="*.html"/>
+		  	  <include name="*.jsp"/>
+		  </fileset>
+		  <fileset file="${project.buildpath}/applet/${applet.signed.jarname}"/>
+		  <fileset file="${project.buildpath}/ext/${ext.installer.signed.jarname}"/>
+		  <lib file="${bouncycastle.provider.jar}" />
+		  <lib file="${bouncycastle.mail.jar}"/>
+		  <classes dir="${classes.buildpath}">
+		  	<include name="it/trento/comune/j4sign/cms/**" />
+		  	<include name="it/trento/comune/j4sign/examples/CMSServlet*.class" />
+		  </classes>
+		</war>
+	</target>
+
+
+
+    <!-- build cms classes -->
+    <target name="compile.cms" depends="prepare,prepare.bin">
+        <javac 	srcdir="${java.srcpath.core}" 
+			encoding="${project.encoding}" source="${jvm.target}" target="${jvm.target}"
+        		destdir="${classes.buildpath}" 
+        	    deprecation="on"
+        		debug="true" 
+        	>
+            <classpath>        
+            	<pathelement path ="${bouncycastle.provider.jar}"/>
+                <pathelement path ="${bouncycastle.mail.jar}"/>
+            	<pathelement path ="${servlet.api.jar}"/>
+            </classpath>
+        	<include name="it/trento/comune/j4sign/cms/**"/>
+        </javac>
+    </target>
+
+
+    <!-- Remove classes directory for clean build -->
+    <target name="clean"
+      description="Prepare for clean build">
+        <delete dir="${project.buildpath}"/>
+        <delete dir="${project.distpath}"/>
+		<mkdir dir="${project.buildpath}" />
+        <mkdir  dir="${project.distpath}"/>
+    </target>
+
+
+	<!-- Copy scripts -->
+    <target name="scripts" depends="prepare.bin,jar.ext">
+        <copy todir="${project.buildpath}" includeEmptyDirs="no">
+            <fileset dir="${scripts.srcpath}">
+            <patternset>
+                <include name="*.bat"/>
+            	<include name="*.sh"/>
+            </patternset>
+            </fileset>
+        </copy>
+    </target>
+	
+    <!-- Build entire project -->
+	<!-- <target name="project" depends="clean,prepare,prepare.bin,resources,web,compile.examples,scripts"/> -->
+	<target name="project" depends="clean,prepare,prepare.bin,resources,jar.ext.installer,compile.examples,scripts"/>
+	
+	<!-- Create source distribution -->
+	 <target name="dist.src"
+	    description="Create source distribution" depends="clean, prepare">
+		
+	 	<copy todir="${project.distpath}/${project.distname}-${project.version}-src">
+        	<fileset dir=".">
+      		  <exclude name="bin/**" />
+      		  <exclude name="build/**" />
+      		  <exclude name="dist/**" />
+        	  <exclude name="doc/**" />
+        	  <exclude name="crl/*" />
+        	  <exclude name="conf/*.p7m" />
+        	  <exclude name="**/CVS/**"/>
+        	</fileset>
+		</copy>
+	 	
+	 	<zip destfile="${project.distpath}/${project.distname}-${project.version}-src.zip" 
+	 		 basedir="${project.distpath}">
+        </zip>
+	 </target>
+
+    <!-- Create binary distribution -->
+    <target name="dist.bin"
+        description="Create binary distribution" depends="project">
+    	
+	 	<copy todir="${project.distpath}/${project.distname}-${project.version}-bin">
+        	<fileset dir="${project.buildpath}">
+      		  <exclude name="applet/**" />
+      		  <exclude name="ext/**" />
+      		  <exclude name="bin/**" />
+        	  <exclude name="**/CVS/**"/>
+        	</fileset>
+	 		<fileset dir="." includes="doc/**,lib/**" />
+		</copy>
+
+   		
+    	<!-- <mkdir dir="${project.distpath}/${project.distname}-${project.version}-bin/lib"/> -->
+    	<jar destfile="${project.distpath}/${project.distname}-${project.version}-bin/lib/${project.distname}-core-${project.version}.jar"
+    		    	basedir="${project.buildpath}/bin"
+    		excludes="it/trento/comune/j4sign/installer/**,com/**,iaik/**" >	    		
+    		<manifest>
+    			<attribute name="Built-By" value="${project.buildby}"/>
+    		</manifest>	
+    	</jar>
+    	<jar destfile="${project.distpath}/${project.distname}-${project.version}-bin/lib/${project.distname}-installer.jar"
+    	    		    	basedir="${project.buildpath}/bin"
+    	    		includes="it/trento/comune/j4sign/installer/**" >	    		
+    	    		<manifest>
+    	    			<attribute name="Built-By" value="${project.buildby}"/>
+    	    		</manifest>	
+    	</jar>
+    	
+	 	<zip destfile="${project.distpath}/${project.distname}-${project.version}-bin.zip" 
+	 		 basedir="${project.distpath}">
+        </zip>
+    </target>
+	
+    <!-- Build project and create distribution-->
+    <target name="all" depends="dist.bin"/>
+
+</project>

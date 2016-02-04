@@ -1,0 +1,1 @@
+g++  -c fieldIO.cpp -I/usr/local/j2sdk1.4.2_06/include -I/usr/local/j2sdk1.4.2_06/include/genunix -I/home/resoli/pcsc-lite-1.1.2/src 

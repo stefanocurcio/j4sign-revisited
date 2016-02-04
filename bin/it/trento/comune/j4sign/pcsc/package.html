@@ -1,0 +1,15 @@
+<html>
+<body bgcolor="#ffffff">
+Classes for detecting smart cards and smart card readers via the PCSC interface.
+<p>
+This package is an attempt to make j4sign to operate seamlessly with PKCS#11 tokens provided by different
+italian Certification Authorities;<br>
+The {@link it.trento.comune.j4sign.pcsc.PCSCHelper} class tries to detect token readers and tokens, 
+proposing, if possible, a candidate criptoki. (The criptoki is the native library implementing the PKCS#11 standard).<br>
+<code>PCSCHelper</code> uses the <a href="http://www.opencard.org">OpenCard</a> PCSC JNI wrapper.
+<p>
+
+The obvious prerequisite is a working PCSC layer; this is usually true
+if a smart card reader has been succesfully installed on the system.
+</body>
+</html>

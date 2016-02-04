@@ -1,0 +1,16 @@
+j4sign - an open, multi-platform digital signature solution
+
+From inside the root of your j4sign binary distribution,
+run (with administration rights) first the install.bat 
+(or install.sh in unix environments) script for installing 
+the java extension and the related native libraries.
+
+In order to do full verification of signatures, you have
+to download the signed package of root CA certificates from:
+
+http://www.cnipa.gov.it/site/_files/lista%20dei%20certificati.html
+
+and place it inside the "conf" directory along with "DigitPA.cer", 
+the root certificate for the signing certificate of the package.
+Then modify accordingly the package name in the conf.properties file. 
+
